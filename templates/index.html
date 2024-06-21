@@ -1,0 +1,156 @@
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>위키봇에게 물어보세요</title>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+        <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet"> 
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/webfont/1.4.10/webfont.js"></script>
+        <script type="text/javascript">
+            WebFont.load({
+                // For google fonts
+                google: {
+                families: ['Droid Sans', 'Droid Serif']
+                },
+                // For early access or custom font
+                custom: {
+                    families: ['Nanum Gothic'],
+                    urls: ['http://fonts.googleapis.com/earlyaccess/nanumgothic.css']
+                }
+
+            });
+        </script>
+        <script>
+            function uuidv4() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
+            uuid = uuidv4()
+            $(document).ready(function(){
+                $('#action_menu_btn').click(function(){
+                    $('.action_menu').toggle();
+                });
+
+                $('#chat_input').on('keyup', function(event) {
+                    if(event.which === 13) {
+                        do_chat();
+                    }
+                })
+
+                $('#chat_button').click(function(){
+                    do_chat();
+                });
+
+                append_chatbot('안녕하세요!<br/>위키 백과사전을 학습한 위키봇 입니다.<br/>궁금한 점을 물어보세요.<br>' +
+                               '<br>' +
+                               '다음과 같이 물어보세요.<br>' +
+                               '- 김구 선생이 누구야?<br>' +
+                               '- 수학의 정의에 대해서 알려줘<br>');
+            });
+
+            function do_chat() {
+                var question = $('#chat_input').val().trim();
+                $('#chat_input').val("");
+                if (0 < question.length) {
+                    append_user(question);
+                    $.post("/question/invoke", JSON.stringify({ "input" : { "question" : question } }), function(data) {
+                        append_chatbot(data["output"]);
+                    })
+                }
+            }
+
+            // function list_click(id) {
+            //     $.post("/browser/" + id, {"uuid": uuid}, function(data) {
+            //         append_chatbot(data["output"]);
+            //     })
+            // }
+
+            // function page_click(start) {
+            //     $.post("/browser_start/" + start, {"uuid": uuid}, function(data) {
+            //         append_chatbot(data["output"]);
+            //     })
+            // }
+
+            function append_user(input) {
+                $('#chat_history').append('<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' + input + '<span class="msg_time_send">' + get_timestamp() + '</span></div><div class="img_cont_msg"><img src="/static/img/person-user.png" class="rounded-circle user_img_msg"></div></div>');
+                $("#chat_history").scrollTop($("#chat_history")[0].scrollHeight);
+            }
+
+            function append_chatbot(input) {
+                $('#chat_history').append('<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="/static/img/HACHI2.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + input + '<span class="msg_time">' + get_timestamp() + '</span></div></div>');
+                $("#chat_history").scrollTop($("#chat_history")[0].scrollHeight);
+            }
+
+            function get_timestamp() {
+                var d = new Date();
+                var s =
+                    leadingZeros(d.getMonth() + 1, 2) + '-' +
+                    leadingZeros(d.getDate(), 2) + ' ' +
+                    leadingZeros(d.getHours(), 2) + ':' +
+                    leadingZeros(d.getMinutes(), 2);
+                return s;
+            }
+            
+            function leadingZeros(n, digits) {
+                var zero = '';
+                n = n.toString();
+                
+                if (n.length < digits) {
+                    for (i = 0; i < digits - n.length; i++)
+                    zero += '0';
+                }
+                return zero + n;
+            }
+        </script>
+	</head>
+	<body>
+        <div class="container-fluid h-100">
+            <div class="row justify-content-center h-100">
+                <div class="col-md-12 col-xl-4 chat">
+                    <div class="card mb-sm-3 mb-md-0 contacts_card">
+                        <div class="card-header msg_head">
+                            <div class="d-flex bd-highlight">
+                                <div class="user_info">
+                                    <span>위키봇에게 물어보세요</span>
+                                    <!-- <p>1767 Messages</p> -->
+                                </div>
+                            </div>
+                            <span id="action_menu_btn"><i class="fas fa-ellipsis-v"></i></span>
+                            <div class="action_menu">
+                                <ul>
+                                    <!-- <li><i class="fas fa-user-circle"></i> View 'Chatbot Again' profile</li> -->
+                                </ul>
+                            </div>
+                        </div>
+                        <div id="chat_history" class="card-body msg_card_body">
+                        </div>
+                        <div class="card-footer">
+                            <div class="input-group">
+                                <div class="input-group-append">
+                                    <span class="input-group-text attach_btn"><i class="fas fa-paperclip"></i></span>
+                                </div>
+                                <input type="text" id="chat_input" class="form-control type_msg" placeholder="Type your message..."></textarea>
+                                <div class="input-group-append">
+                                    <span id="chat_button" class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
